@@ -88,8 +88,14 @@ class JORMDatabaseQuery
 	 */
 	protected $_references = array();
 	
+	/**
+	 * Constructor class can recive another JORMDatabaseQuery object by reference
+	 * 
+	 * @since 11.1
+	 */
 	public function __construct($reference=null)
 	{
+		//checking object
 		if( is_object($reference) )
 		{
 			$reflection = new ReflectionClass(get_class($reference));
@@ -114,6 +120,11 @@ class JORMDatabaseQuery
 		$this->_createSelect();
 	}
 	
+	/**
+	 * Create a instance from object that extends JDatabaseQuery Class these objects helps to construct a query builder
+	 * 
+	 * @since 11.1
+	 */
 	public static function getInstance($queryObject,$reference=null)
 	{
 		// Sanitize and prepare the table class name.
@@ -146,14 +157,21 @@ class JORMDatabaseQuery
 		return new $queryObjectClass($reference);
 	}
 	
+	/**
+	 * Create a dinamyc instance of array options passed by reference
+	 * 
+	 * @since 11.1
+	 */
 	public static function createInstance(array $options)
 	{
 		$instance = new JORMDatabaseQuery();
 		
+		//initialize vars
 		$instance->_fields = isset($options['fields']) ? $options['fields'] : array() ;
 		$instance->_tbl = $options['tbl'];
 		$instance->_tbl_alias = isset($options['tbl_alias']) ? $options['tbl_alias'] : null ;
 		$instance->_jtable = is_array($options['jtable']) ? $options['jtable'] : array() ;
+		//check jable prefix
 		if( !empty($instance->_jtable) && !isset($instance->_jtable['prefix']) ){
 			$instance->_jtable['prefix'] = 'JTable';
 		}
@@ -167,6 +185,11 @@ class JORMDatabaseQuery
 		return $instance;
 	}
 	
+	/**
+	 * This function will build a select on table
+	 * 
+	 * @since 11.1
+	 */
 	private function _createSelect()
 	{
 		if( empty($this->_fields) && empty($this->_tbl) ) return;
@@ -174,6 +197,11 @@ class JORMDatabaseQuery
 		$this->_query->select($this->_fields)->from($this->_getTable());
 	}
 	
+	/**
+	 * 
+	 * 
+	 * @since 11.1
+	 */
 	private function _getTable()
 	{
 		$table = $this->_tbl;
@@ -182,11 +210,22 @@ class JORMDatabaseQuery
 		return $table;
 	}
 	
+	/**
+	 * Return a JTable instance
+	 * 
+	 * @since 11.1
+	 * @return JTable Object
+	 */
 	public function getJTable()
 	{
 		return $this->_jtable;
 	}
 	
+	/**
+	 * Check the autojoin between JORMDatabaseQuery objects
+	 * 
+	 * @since 11.1
+	 */
 	private function _autoJoin($reference)
 	{
 		if( !array_key_exists($reference->_table, $this->_foreign_tables) ) return;
@@ -214,11 +253,19 @@ class JORMDatabaseQuery
 			$this->_query->select($columns);
 	}
 	
+	/**
+	 * Initialize some variables
+	 * 
+	 * @since 11.1
+	 */
 	protected function _initialize()
 	{
 		if( empty($this->_tbl) ) return;
 		
+		//get table columns
 		$columns = $this->_db->getTableColumns($this->_tbl);
+		
+		//check column type and add to countable work if has a numeric type
 		foreach($columns as $field => $field_type)
 		{
 			switch($field_type)
@@ -228,33 +275,55 @@ class JORMDatabaseQuery
 					JORMInflector::addCountable($field);
 			}
 		}
-		
+
+		//set the select fields if empty
 		if( empty($this->_fields) )
 			$this->_fields = array_keys($columns);
 			
+		//check config of JTable class
 		if( !empty($this->_jtable) && is_array($this->_jtable) && isset($this->_jtable['type']) && isset($this->_jtable['prefix']) )
 		{
-			$this->setJTable($this->_jtable['type'],$this->_jtable['prefix']);
+			$this->_instanceJTable($this->_jtable['type'],$this->_jtable['prefix']);
 		}
 	}
 	
-	public function setJTable($type,$prefix='JTable')
+	/**
+	 * Instance a JTable class
+	 * 
+	 * @since 11.1
+	 */
+	public function _instanceJTable($type,$prefix='JTable')
 	{
 		$this->_jtable = JTable::getInstance($type,$prefix);
 		
 		return $this;
 	}
 	
+	/**
+	 * Return name of class or self name property
+	 * 
+	 * @since 11.1
+	 */
 	public function getName()
 	{
 		return !empty($this->_name) ? $this->_name : get_class($this) ;
 	}
 	
+	/**
+	 * Add path to helper classes
+	 * 
+	 * @since 11.1
+	 */
 	public static function addHelperPath($path = null)
 	{
 		JORMDatabaseQueryHelper::addIncludePath($path);
 	}
 	
+	/**
+	 * Instance a Helper class that do stuffs like: render modules, dump data, etc.
+	 * 
+	 * @since 11.1
+	 */
 	public function getHelper($helper)
 	{
 		return JORMDatabaseQueryHelper::getInstance($helper, $this);
@@ -300,6 +369,11 @@ class JORMDatabaseQuery
 		return $_paths;
 	}
 	
+	/**
+	 * Set a property on JTable that control 
+	 * 
+	 * @since 11.1
+	 */
 	public function __set($property,$value)
 	{
 		if(!($this->_jtable instanceof JTable)) throw new Exception(JText::_('You must set JTable Class'),500);
@@ -307,6 +381,16 @@ class JORMDatabaseQuery
 		$this->_jtable->set($property,$value);
 	}
 	
+	/**
+	 * This function will check method and callback using these order
+	 * 
+	 * 1 - Field check
+	 * 2 - JTable 
+	 * 2 - JDatabaseQuery
+	 * 3 - JDatabase
+	 * 
+	 * @since 11.1
+	 */
 	public function __call($method,$arguments)
 	{
 		settype($arguments, 'array');
@@ -318,22 +402,26 @@ class JORMDatabaseQuery
 			return $this->_references[$method];
 		}
 		
-		/**
-		 * filter table fields when called like method
-		 */
+		//check if method is a field
 		$field_key = array_search($method, $this->_fields);
+		
+		//check if exists on fields list
 		if( array_search($method, $this->_fields) !== false ){
 			$table = $this->_table;
 			if( !empty($this->_table_alias) ) $table = $this->_table_alias;
 			
 			$string = $table.'.'.$method;
+			
+			//check if is one argument set the condition equal argument
 			if( $count_arguments == 1 ){
 				$string .= '=' . $this->_db->quote($arguments[0],true);
 			}
 			else{
+				//add quote to every argument
 				foreach($arguments as $argument)
 					$this->_db->quote($argument,true);
 				
+				//if countable field change the comparison method to IN, else use LIKE
 				if( JORMInflector::countable($method) )
 				{
 					$string .= ' IN('. implode(',',$arguments) .')';
@@ -342,6 +430,8 @@ class JORMDatabaseQuery
 					$string .= ' LIKE("'. implode('","',$arguments) .'")';
 				}
 			}
+			
+			//add to where clause
 			$this->_query->where($string);
 			return $this;
 		}
@@ -371,8 +461,6 @@ class JORMDatabaseQuery
 			$this->_db->setQuery($this->_query);
 			return call_user_method_array($method, $this->_db, $arguments);
 		}
-		
-		
 		
 		throw new Exception(JText::sprintf('Undefined method %s on class '.get_class($this),$method),500);
 	}
