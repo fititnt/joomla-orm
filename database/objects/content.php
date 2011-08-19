@@ -27,25 +27,25 @@ class Content extends JORMDatabaseQuery
 	 * @since  11.1
 	 */
 	protected $_fields = array(
-		'a.id',
-		'a.title',
-		'a.alias',
-		'a.title_alias',
-		'a.introtext',
-		'a.fulltext',
-		'a.created',
-		'a.catid',
-		'a.created_by',
-		'a.creted_by_alias',
-		'a.modified',
-		'a.metakey',
-		'a.metadesc',
-		'a.version',
-		'a.hits',
-		'a.metadata',
-		'a.featured',
-		'a.ordering',
-		'a.attribs'
+		'id',
+		'title',
+		'alias',
+		'title_alias',
+		'introtext',
+		'fulltext',
+		'created',
+		'catid',
+		'created_by',
+		'creted_by_alias',
+		'modified',
+		'metakey',
+		'metadesc',
+		'version',
+		'hits',
+		'metadata',
+		'featured',
+		'ordering',
+		'attribs'
 	);
 	/**
 	 * Name of the database table.

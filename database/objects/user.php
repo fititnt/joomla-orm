@@ -27,15 +27,15 @@ class User extends JORMDatabaseQuery
 	 * @since  11.1
 	 */
 	protected $_fields = array(
-		'u.id',
-		'u.name',
-		'u.email',
-		'u.username',
-		'u.gid',
-		'u.registerDate',
-		'u.lastvisitDate',
-		'u.activation',
-		'u.params'
+		'id',
+		'name',
+		'email',
+		'username',
+		'gid',
+		'registerDate',
+		'lastvisitDate',
+		'activation',
+		'params'
 	);
 	
 	/**

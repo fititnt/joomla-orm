@@ -27,19 +27,19 @@ class Category extends JORMDatabaseQuery
 	 * @since  11.1
 	 */
 	protected $_fields = array(
-		'cat.id',
-		'cat.level',
-		'cat.extension',
-		'cat.path',
-		'cat.title',
-		'cat.alias',
-		'cat.description',
-		'cat.access',
-		'cat.params',
-		'cat.metadesc',
-		'cat.metakey',
-		'cat.metadata',
-		'cat.hits'
+		'id',
+		'level',
+		'extension',
+		'path',
+		'title',
+		'alias',
+		'description',
+		'access',
+		'params',
+		'metadesc',
+		'metakey',
+		'metadata',
+		'hits'
 	);
 	
 	/**

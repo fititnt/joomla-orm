@@ -27,9 +27,9 @@ class UserGroup extends JORMDatabaseQuery
 	 * @since  11.1
 	 */
 	protected $_fields = array(
-		'grp.id',
-		'grp.parent_id',
-		'grp.title'
+		'id',
+		'parent_id',
+		'title'
 	);
 	
 	/**
