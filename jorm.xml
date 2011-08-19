@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<extension type="library" method="upgrade" version="1.7.0">
+	<libraryname>jorm</libraryname>
+	<name>ORM Framework</name>
+	<author>Júlio Pontes</author>
+	<creationDate>August 2011</creationDate>
+	<copyright>Copyright (C) 2005 - 2010 Open Source Matters. All rights reserved.</copyright>
+	<license>http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL</license>
+	<authorEmail>juliopfneto@gmail.com</authorEmail>
+	<authorUrl></authorUrl>
+	<version>0.1</version>
+	<description>JORM Framework 0.1</description>
+	<files>
+		<filename>README.txt</filename>
+		<filename>import.php</filename>
+		<folder>database</folder>
+		<folder>inflector</folder>
+	</files>
+</extension>
