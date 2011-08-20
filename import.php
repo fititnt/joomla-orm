@@ -4,8 +4,12 @@
  * 
  * @since 11.1
  */
-jimport('jorm.inflector.inflector');
-jimport('jorm.database.helpers.abstract');
-jimport('jorm.database.databasequeryexception');
-jimport('jorm.database.databasequeryhelper');
-jimport('jorm.database.databasequery');
+
+$basePath = dirname(__FILE__);
+
+JLoader::import('inflector.inflector',$basePath);
+JLoader::import('database.helpers.abstract',$basePath);
+JLoader::import('database.databasequeryexception',$basePath);
+JLoader::import('database.databasequeryhelper',$basePath);
+JLoader::import('database.table',$basePath);
+JLoader::import('database.databasequery',$basePath);

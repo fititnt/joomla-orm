@@ -8,8 +8,6 @@
 
 defined('JPATH_PLATFORM') or die;
 
-jimport('joomla.database.table');
-
 /**
  * JORM Database Query class
  *
@@ -30,6 +28,14 @@ class JORMDatabaseQuery
 	 * @since  11.1
 	 */
 	protected $_fields	= '';
+	
+	/**
+	 * Table prefix
+	 * 
+	 * @var string
+	 * @since 11.1
+	 */
+	protected $_tbl_prefix = '';
 	
 	/**
 	 * Name of the database table.
@@ -166,10 +172,11 @@ class JORMDatabaseQuery
 		$instance = new JORMDatabaseQuery();
 		
 		//check default options
-		$this->_options($options);
+		$instance->_options($options);
 		
 		//initialize vars
 		$instance->_fields = $options['fields'];
+		$instance->_tbl_prefix = $options['tbl_prefix'];
 		$instance->_tbl = $options['tbl'];
 		$instance->_tbl_alias = $options['tbl_alias'];
 		$instance->_jtable = $options['jtable'];
@@ -217,7 +224,9 @@ class JORMDatabaseQuery
 		$default_options = array(
 			//select fields
 			'fields' => array(),
-			//set table alias
+			//table prefix
+			'tbl_prefix' => '',
+			//table alias
 			'tbl_alias' => null,
 			//reference to anothers
 			'references' => array(),
@@ -226,23 +235,29 @@ class JORMDatabaseQuery
 			//jtable config
 			'jtable' => array(
 				'type' => null,
-				'prefix' => 'JTable'
+				'prefix' => 'JTable',
+				'tbl' => '',
+				'tbl_key' => '',
+				'db' => $this->_db
 			)
 		);
 		
 		foreach($default_options as $default_option_key => $default_option_value)
 		{
 			//set default option
-			if( isset($options[$default_option_key]) || empty($options[$default_option_key]) )
+			if( !isset($options[$default_option_key]) || empty($options[$default_option_key]) )
 			{
 				$options[$default_option_key] = $default_option_value;
 			}
 			
-			//check jtable field
-			if($default_option_key == 'jtable'){
-				//set default jtable prefix config
-				if(isset($options[$default_option_key]['prefix']))
-					$options[$default_option_key]['prefix'] = 'JTable';
+			if( is_array($default_options[$default_option_key]) && !empty($default_options[$default_option_key]) && !empty($options[$default_option_key]) )
+			{
+				foreach($default_options[$default_option_key] as $arr_option_key => $arr_option_value)
+				{
+					//set default jtable prefix config
+					if(!isset($options[$default_option_key][$arr_option_key]))
+						$options[$default_option_key][$arr_option_key] = $arr_option_value;
+				}
 			}
 		}
 	}
@@ -266,7 +281,7 @@ class JORMDatabaseQuery
 	 */
 	private function _getTable()
 	{
-		$table = $this->_tbl;
+		$table = $this->_tbl_prefix . $this->_tbl;
 		if( !empty($this->_tbl_alias) ) $table .= ' AS '.$this->_tbl_alias;
 		
 		return $table;
@@ -327,7 +342,7 @@ class JORMDatabaseQuery
 		if( empty($this->_tbl) ) return;
 		
 		//get table columns
-		$columns = $this->_db->getTableColumns($this->_tbl);
+		$columns = $this->_db->getTableColumns($this->_tbl_prefix.$this->_tbl);
 		
 		//check column type and add to countable work if has a numeric type
 		foreach($columns as $field => $field_type)
@@ -359,12 +374,15 @@ class JORMDatabaseQuery
 	 */
 	public function _instanceJTable(array $config)
 	{
-		if(isset($config['tbl_key']) && !empty($config['tbl_key']) && ( empty($config['type']) && empty($config['prefix']) ))
+		if(!empty($config['tbl_key']) && !empty($config['tbl']) && ($config['db'] instanceof JDatabase))
 		{
-			$jtable = new JTable($config['tbl'], $config['tbl_key'], $this->_db);
+			$jtable = new JORMDatabaseTable($config['tbl'], $config['tbl_key'], $config['db']);
 		}
-		else{
-			$jtable = JTable::getInstance($config['type'],$config['prefix']);
+		else if(isset($config['type']) && !empty($config['type']) && isset($config['prefix']) && !empty($config['prefix'])){
+			$jtable = JORMDatabaseTable::getInstance($config['type'],$config['prefix']);
+		}
+		else {
+			$jtable = $config;
 		}
 		
 		$this->_jtable = $jtable;
