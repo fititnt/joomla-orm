@@ -16,4 +16,7 @@
 		<folder>database</folder>
 		<folder>inflector</folder>
 	</files>
+	<languages>
+		<language tag="en-GB">en-GB.lib_jorm.ini</language>
+	</languages>
 </extension>

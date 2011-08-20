@@ -8,6 +8,8 @@
 
 defined('JPATH_PLATFORM') or die;
 
+jimport('joomla.database.table');
+
 /**
  * JORM Database Query class
  *
@@ -59,10 +61,7 @@ class JORMDatabaseQuery
 	 * @var	JTable	A JTable object.
 	 * @since  11.1
 	 */
-	protected $_jtable = array(
-		'prefix' => 'JTable',
-		'type' => null
-	);
+	protected $_jtable = array();
 	
 	/**
 	 * Foreign tables references.
@@ -142,13 +141,13 @@ class JORMDatabaseQuery
 
 				// If we were unable to load the proper class, raise a warning and return false.
 				if (!class_exists($queryObjectClass)) {
-					JError::raiseWarning(0, JText::sprintf('JLIB_DATABASE_ERROR_CLASS_NOT_FOUND_IN_FILE', $queryObjectClass));
+					JError::raiseWarning(0, JText::sprintf('JORMLIB_OBJECT_ERROR_CLASS_NOT_FOUND_IN_FILE', $queryObjectClass));
 					return false;
 				}
 			}
 			else {
 				// If we were unable to find the class file in the JTable include paths, raise a warning and return false.
-				JError::raiseWarning(0, JText::sprintf('JLIB_DATABASE_ERROR_NOT_SUPPORTED_FILE_NOT_FOUND', $queryObject));
+				JError::raiseWarning(0, JText::sprintf('JORMLIB_OBJECT_ERROR_NOT_SUPPORTED_FILE_NOT_FOUND', $queryObject));
 				return false;
 			}
 		}
@@ -166,15 +165,14 @@ class JORMDatabaseQuery
 	{
 		$instance = new JORMDatabaseQuery();
 		
+		//check default options
+		$this->_options($options);
+		
 		//initialize vars
-		$instance->_fields = isset($options['fields']) ? $options['fields'] : array() ;
+		$instance->_fields = $options['fields'];
 		$instance->_tbl = $options['tbl'];
-		$instance->_tbl_alias = isset($options['tbl_alias']) ? $options['tbl_alias'] : null ;
-		$instance->_jtable = ( isset($options['jtable']) && is_array($options['jtable']) ) ? $options['jtable'] : array() ;
-		//check jable prefix
-		if( !empty($instance->_jtable) && !isset($instance->_jtable['prefix']) ){
-			$instance->_jtable['prefix'] = 'JTable';
-		}
+		$instance->_tbl_alias = $options['tbl_alias'];
+		$instance->_jtable = $options['jtable'];
 		
 		//Initialize
 		$instance->_initialize();
@@ -183,6 +181,65 @@ class JORMDatabaseQuery
 		$instance->_createSelect();
 		
 		return $instance;
+	}
+	
+	/**
+	 * Create a reference to another JORMDatabaseQuery Object
+	 * 
+	 * @param string $alias
+	 * @param string|array|JORMDatabaseQuery Object $config
+	 */
+	public function addReference($alias,$config)
+	{
+		//check array
+		if( is_array($config) )
+			$config = $this->_options($config);
+		//check object
+		if( is_object($config) ){
+			JORMDatabaseQueryException::checkObjectSubclass($config);
+		}
+		
+		$this->_references[$alias] = $config;
+	} 
+	
+	/**
+	 * Check default options variables
+	 * 
+	 * @param array $options
+	 */
+	private function _options(array &$options)
+	{
+		$default_options = array(
+			//select fields
+			'fields' => array(),
+			//set table alias
+			'tbl_alias' => null,
+			//reference to anothers
+			'references' => array(),
+			//foreign tables
+			'foreign_tables' => array(),
+			//jtable config
+			'jtable' => array(
+				'type' => null,
+				'prefix' => 'JTable'
+			)
+		);
+		
+		foreach($default_options as $default_option_key => $default_option_value)
+		{
+			//set default option
+			if( isset($options[$default_option_key]) || empty($options[$default_option_key]) )
+			{
+				$options[$default_option_key] = $default_option_value;
+			}
+			
+			//check jtable field
+			if($default_option_key == 'jtable'){
+				//set default jtable prefix config
+				if(isset($options[$default_option_key]['prefix']))
+					$options[$default_option_key]['prefix'] = 'JTable';
+			}
+		}
 	}
 	
 	/**
@@ -198,7 +255,7 @@ class JORMDatabaseQuery
 	}
 	
 	/**
-	 * 
+	 * Return complete table name and alias
 	 * 
 	 * @since 11.1
 	 */
@@ -281,20 +338,45 @@ class JORMDatabaseQuery
 			$this->_fields = array_keys($columns);
 			
 		//check config of JTable class
-		if( !empty($this->_jtable) && is_array($this->_jtable) && isset($this->_jtable['type']) && isset($this->_jtable['prefix']) )
+		if( !empty($this->_jtable) && is_array($this->_jtable) )
 		{
-			$this->_instanceJTable($this->_jtable['type'],$this->_jtable['prefix']);
+			$this->_instanceJTable($this->_jtable);
 		}
 	}
 	
+/**
+	 * Method to load and return a model object.
+	 *
+	 * @param   string  $name    The name of the view
+	 * @param   string  $prefix  The class prefix. Optional.
+	 * @param   array   $config  Configuration settings to pass to JTable::getInsance
+	 *
+	 * @return  mixed  Model object or boolean false if failed
+	 * @since   11.1
+	 * @see     JTable::getInstance
+	 */
+	protected function _createTable($name, $prefix = 'Table', $config = array())
+	{
+		
+	}
+	
 	/**
-	 * Instance a JTable class
+	 * Create or get instance of JTable class
 	 * 
+	 * @param array Config
 	 * @since 11.1
 	 */
-	public function _instanceJTable($type,$prefix='JTable')
+	public function _instanceJTable(array $config)
 	{
-		$this->_jtable = JTable::getInstance($type,$prefix);
+		if(isset($config['tbl_key']) && !empty($config['tbl_key']) && ( empty($config['type']) && empty($config['prefix']) ))
+		{
+			$jtable = new JTable($config['tbl'], $config['tbl_key'], $this->_db);
+		}
+		else{
+			$jtable = JTable::getInstance($config['type'],$config['prefix']);
+		}
+		
+		$this->_jtable = $jtable;
 		
 		return $this;
 	}
@@ -395,14 +477,85 @@ class JORMDatabaseQuery
 	{
 		settype($arguments, 'array');
 		
-		$count_arguments = count($arguments);
-		
-		//check if method is a reference
-		if( array_key_exists($method, $this->_references) ){
-			return $this->_references[$method];
-		}
+		//check to call another instance
+		$this->_callReference($method);
 		
 		//check if method is a field
+		$this->_callField($method, $arguments);
+		
+		/**
+		 * Call JTable methods
+		 */
+		if( method_exists($this->_jtable, $method) )
+		{
+			return call_user_method_array($method, $this->_jtable, $arguments);
+		}
+		
+		/**
+		 * Call JDatabaseQuery methods
+		 */
+		if( method_exists($this->_query, $method) )
+		{
+			call_user_method_array($method, $this->_query, $arguments);
+			return $this;
+		}
+		
+		/**
+		 * Call JDatabase methods
+		 */
+		if( method_exists($this->_db, $method) )
+		{
+			$this->_db->setQuery($this->_query);
+			return call_user_method_array($method, $this->_db, $arguments);
+		}
+		
+		JORMDatabaseQueryException::callMethodNotExists($method,$this);
+	}
+	
+	/**
+	 * Checking referenced config and return a JORMDatabaseQuery object
+	 * 
+	 * @param string, object, array $method
+	 * @throws Exception
+	 * @return JORMDatabaseQuery object
+	 * @since 11.1
+	 */
+	final function _callReference($method)
+	{
+		//check if method is a reference
+		if( array_key_exists($method, $this->_references) ){
+			$reference = $this->_references[$method];
+			
+			/**
+			 * If reference is a string try to get instance
+			 */
+			if( is_string($reference) && !class_exists($reference) )
+				$reference = self::getInstance($reference,$this);
+			/**
+			 * If reference is an array create a new instance
+			 */
+			else if( is_array($reference) )
+				$reference = self::createInstance($reference);
+			/**
+			 * If reference is object
+			 */
+			else if( is_object($reference) )
+				JORMDatabaseQueryException::checkObjectSubclass($reference);
+			
+			return $reference;
+		}
+	}
+	
+	/**
+	 * Check if call method is a table field
+	 * 
+	 * @param string $method
+	 * @param array $arguments
+	 */
+	protected function _callField($method,$arguments)
+	{
+		$count_arguments = count($arguments);
+		
 		$field_key = array_search($method, $this->_fields);
 		
 		//check if exists on fields list
@@ -433,35 +586,8 @@ class JORMDatabaseQuery
 			
 			//add to where clause
 			$this->_query->where($string);
+			
 			return $this;
 		}
-		
-		/**
-		 * Call JTable methods
-		 */
-		if( method_exists($this->_jtable, $method) )
-		{
-			return call_user_method_array($method, $this->_jtable, $arguments);
-		}
-		
-		/**
-		 * Call JDatabaseQuery methods
-		 */
-		if( method_exists($this->_query, $method) )
-		{
-			call_user_method_array($method, $this->_query, $arguments);
-			return $this;
-		}
-		
-		/**
-		 * Call JDatabase methods
-		 */
-		if( method_exists($this->_db, $method) )
-		{
-			$this->_db->setQuery($this->_query);
-			return call_user_method_array($method, $this->_db, $arguments);
-		}
-		
-		throw new Exception(JText::sprintf('Undefined method %s on class '.get_class($this),$method),500);
 	}
 }

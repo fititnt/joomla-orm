@@ -45,13 +45,13 @@ abstract class JORMDatabaseQueryHelper
 
 				// If we were unable to load the proper class, raise a warning and return false.
 				if (!class_exists($helperClass)) {
-					JError::raiseWarning(0, JText::sprintf('JLIB_DATABASE_ERROR_CLASS_NOT_FOUND_IN_FILE', $helperClass));
+					JError::raiseWarning(0, JText::sprintf('JORMLIB_HELPER_ERROR_CLASS_NOT_FOUND_IN_FILE', $helperClass));
 					return false;
 				}
 			}
 			else {
 				// If we were unable to find the class file in the JTable include paths, raise a warning and return false.
-				JError::raiseWarning(0, JText::sprintf('JLIB_DATABASE_ERROR_NOT_SUPPORTED_FILE_NOT_FOUND', $type));
+				JError::raiseWarning(0, JText::sprintf('JORMLIB_HELPER_ERROR_NOT_SUPPORTED_FILE_NOT_FOUND', $type));
 				return false;
 			}
 		}
