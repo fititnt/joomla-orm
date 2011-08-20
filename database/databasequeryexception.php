@@ -31,7 +31,7 @@ abstract class JORMDatabaseQueryException
 	static function checkObjectSubclass($object)
 	{
 		$reflection = new ReflectionClass(get_class($object));
-		if(!$reflection->isSubclassOf('JORMDatabaseQuery'))
+		if(!$reflection->isSubclassOf('JORMDatabaseQuery') && !($object instanceof JORMDatabaseQuery))
 			throw new Exception(JText::sprintf('JORMLIB_ERROR_CLASS_NOT_SUPORTED',get_class($object)),500);
 	}
 	
@@ -45,6 +45,6 @@ abstract class JORMDatabaseQueryException
 	 */
 	static function callMethodNotExists($method,$reference)
 	{
-		throw new Exception(JText::sprintf('JORMLIB_ERROR_UNDEFINED_METHOD'.get_class($reference),$method),500);
+		throw new Exception(JText::sprintf('JORMLIB_ERROR_UNDEFINED_METHOD',$method,get_class($reference)),500);
 	}
 }

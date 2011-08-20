@@ -13,3 +13,6 @@ JLoader::import('database.databasequeryexception',$basePath);
 JLoader::import('database.databasequeryhelper',$basePath);
 JLoader::import('database.table',$basePath);
 JLoader::import('database.databasequery',$basePath);
+
+//load language
+JFactory::getLanguage()->load('lib_jorm');

@@ -22,6 +22,14 @@ defined('JPATH_PLATFORM') or die;
 class JORMDatabaseQuery
 {
 	/**
+	 * Name
+	 * 
+	 * @var string
+	 * @since 11.1
+	 */
+	protected $_name;
+	
+	/**
 	 * List of fields to select.
 	 *
 	 * @var    Array
@@ -75,7 +83,7 @@ class JORMDatabaseQuery
 	 * @var    Array
 	 * @since  11.1
 	 */
-	protected $_foreign_tables = array();
+	protected $_foreign_tbls = array();
 	
 	/**
 	 * The JDatabaseQuery Class.
@@ -100,29 +108,30 @@ class JORMDatabaseQuery
 	 */
 	public function __construct($reference=null)
 	{
+		// Set internal variables.
+		$this->_db 		= JFactory::getDbo(); 
+		
 		//checking object
 		if( is_object($reference) )
 		{
-			$reflection = new ReflectionClass(get_class($reference));
-			if($reflection->isSubclassOf(__CLASS__)){
-				//Copy query instance
-				$this->query = &$reference->query;
-				//Initialize
-				$this->_initialize();
-				//Auto join
-				$this->_autoJoin($reference);
-				//Create a reference to back to scope
-				$this->addReference($reference->getName(),get_class($reference));
-			}
+			JORMDatabaseQueryException::checkObjectSubclass($reference);
+			
+			//Copy query instance
+			$this->query = &$reference->query;
+			//Initialize
+			$this->_initialize();
+			//Auto join
+			$this->_autoJoin($reference);
+			//Create a reference to back to scope
+			$this->addReference($reference->getName(),get_class($reference));
 		}
-		
-		// Set internal variables.
-		$this->_db 		= JFactory::getDbo(); 
-		$this->_query 	= $this->_db->getQuery(true);
-		//Initialize
-		$this->_initialize();
-		//Create select
-		$this->_createSelect();
+		else{
+			$this->_query 	= $this->_db->getQuery(true);
+			//Initialize
+			$this->_initialize();
+			//Create select
+			$this->_createSelect();
+		}
 	}
 	
 	/**
@@ -165,9 +174,11 @@ class JORMDatabaseQuery
 	/**
 	 * Create a dinamyc instance of array options passed by reference
 	 * 
+	 * @param Array options
+	 * @param JORMDatabaseQuery reference
 	 * @since 11.1
 	 */
-	public static function createInstance(array $options)
+	public static function createInstance(array $options,JORMDatabaseQuery $reference = null)
 	{
 		$instance = new JORMDatabaseQuery();
 		
@@ -175,17 +186,31 @@ class JORMDatabaseQuery
 		$instance->_options($options);
 		
 		//initialize vars
+		$instance->_name = $options['name'];
 		$instance->_fields = $options['fields'];
 		$instance->_tbl_prefix = $options['tbl_prefix'];
 		$instance->_tbl = $options['tbl'];
 		$instance->_tbl_alias = $options['tbl_alias'];
 		$instance->_jtable = $options['jtable'];
+		$instance->_foreign_tbls = $options['foreign_tbls'];
+		$instance->_references = $options['references'];
 		
 		//Initialize
 		$instance->_initialize();
 		
 		//Create select
-		$instance->_createSelect();
+		if( is_object($reference) )
+		{
+			$instance->_query = &$reference->_query;
+			
+			$instance->_autoJoin($reference);
+			//Create a reference to back to scope
+			$instance->addReference($reference->getName(),get_class($reference));
+		}
+		else {
+			$instance->_createSelect();
+		}
+			
 		
 		return $instance;
 	}
@@ -222,6 +247,8 @@ class JORMDatabaseQuery
 	private function _options(array &$options)
 	{
 		$default_options = array(
+			//name
+			'name' => '',
 			//select fields
 			'fields' => array(),
 			//table prefix
@@ -231,7 +258,7 @@ class JORMDatabaseQuery
 			//reference to anothers
 			'references' => array(),
 			//foreign tables
-			'foreign_tables' => array(),
+			'foreign_tbls' => array(),
 			//jtable config
 			'jtable' => array(
 				'type' => null,
@@ -259,6 +286,13 @@ class JORMDatabaseQuery
 						$options[$default_option_key][$arr_option_key] = $arr_option_value;
 				}
 			}
+			
+			//check references
+			if( !empty($options[$default_option_key]) && $default_option_key == 'references' && is_array($options[$default_option_key]) ){
+				foreach($options[$default_option_key] as $reference){
+					$this->_options($reference);
+				}
+			}
 		}
 	}
 	
@@ -271,17 +305,27 @@ class JORMDatabaseQuery
 	{
 		if( empty($this->_fields) && empty($this->_tbl) ) return;
 		
-		$this->_query->select($this->_fields)->from($this->_getTable());
+		$tmp_fields = $this->_fields;
+		foreach($tmp_fields as &$field)
+			$field = $this->_addAliasToField($field);
+		
+		$this->_query->select($tmp_fields)->from($this->_getTable());
 	}
 	
 	/**
-	 * Return complete table name and alias
+	 * Return complete table name and alias or only table name/alias 
 	 * 
+	 * @param boolean mode
 	 * @since 11.1
 	 */
-	private function _getTable()
+	private function _getTable($mode=false)
 	{
 		$table = $this->_tbl_prefix . $this->_tbl;
+		if($mode){			
+			if( !empty($this->_tbl_alias) ) $table = $this->_tbl_alias;
+			return $table;
+		}
+		
 		if( !empty($this->_tbl_alias) ) $table .= ' AS '.$this->_tbl_alias;
 		
 		return $table;
@@ -305,13 +349,26 @@ class JORMDatabaseQuery
 	 */
 	private function _autoJoin($reference)
 	{
-		if( !array_key_exists($reference->_table, $this->_foreign_tables) ) return;
+		if( !array_key_exists($reference->_tbl, $this->_foreign_tbls) ) return;
 		
-		$foreign = $this->_foreign_tables[$reference->_table];
+		$foreign = $this->_foreign_tbls[$reference->_tbl];
+		
 		$join_type 	= $foreign['jointype'];
-		$columns 	= isset($foreign['columns']) ? $foreign['columns'] : array() ;
-		$conditions = $this->_getTable()
-					.$foreign['conditions'];
+		$join_columns 	= $foreign['joincolumn'];
+		$conditions = $this->_getTable();
+		
+		$arrJoinColumns = array();
+		if( array_key_exists(0, $join_columns) )
+		{
+			foreach($join_columns as $join_column){
+				$arrJoinColumns[] = $reference->_getTable(true).$join_column['name'].' = '.$this->_getTable(true).$join_column['referencedColumnName'];
+			}
+		}
+		else{
+			$arrJoinColumns[] = $reference->_addAliasToField($join_columns['name']).' = '.$this->_addAliasToField($join_columns['referencedColumnName']);
+		}
+		
+		$conditions .= ' ON ('.implode(' AND ',$arrJoinColumns).')';
 		
 		//create join type
 		switch($join_type)
@@ -467,9 +524,17 @@ class JORMDatabaseQuery
 	 */
 	public function __set($property,$value)
 	{
-		if(!($this->_jtable instanceof JTable)) throw new Exception(JText::_('You must set JTable Class'),500);
+		var_dump($property);
 		
-		$this->_jtable->set($property,$value);
+		if(isset($this->$property)){
+			$this->$property = $value;
+		}
+		else{
+			exit;
+			if(!($this->_jtable instanceof JTable)) throw new Exception(JText::_('You must set JTable Class'),500);
+			
+			$this->_jtable->set($property,$value);
+		}
 	}
 	
 	/**
@@ -487,10 +552,16 @@ class JORMDatabaseQuery
 		settype($arguments, 'array');
 		
 		//check to call another instance
-		$this->_callReference($method);
+		$return = $this->_callReference($method);
+		if(is_object($return)){
+			return $return;
+		}
 		
 		//check if method is a field
-		$this->_callField($method, $arguments);
+		$return = $this->_callField($method, $arguments);
+		if(is_object($return)){
+			return $return;
+		}
 		
 		/**
 		 * Call JTable methods
@@ -522,44 +593,59 @@ class JORMDatabaseQuery
 	}
 	
 	/**
-	 * Checking referenced config and return a JORMDatabaseQuery object
+	 * Checking referenced config and return a JORMDatabaseQuery object when exists, or false
 	 * 
 	 * @param string, object, array $method
 	 * @throws Exception
-	 * @return JORMDatabaseQuery object
+	 * @return JORMDatabaseQuery object or FALSE
 	 * @since 11.1
 	 */
 	final function _callReference($method)
 	{
 		//check if method is a reference
 		if( array_key_exists($method, $this->_references) ){
-			$reference = $this->_references[$method];
+			$reference_data = $this->_references[$method];
 			
 			/**
 			 * If reference is a string try to get instance
 			 */
-			if( is_string($reference) && !class_exists($reference) )
-				$reference = self::getInstance($reference,$this);
+			if( is_string($reference_data) && !class_exists($reference_data) )
+				$reference = self::getInstance($reference_data,$this);
 			/**
 			 * If reference is an array create a new instance
 			 */
-			else if( is_array($reference) )
-				$reference = self::createInstance($reference);
+			else if( is_array($reference_data) ){
+				$reference_data['name'] = $method;
+				$reference = self::createInstance($reference_data,$this);
+			}
+				
 			/**
-			 * If reference is object
+			 * Check object class
 			 */
-			else if( is_object($reference) )
-				JORMDatabaseQueryException::checkObjectSubclass($reference);
+			JORMDatabaseQueryException::checkObjectSubclass($reference);
 			
 			return $reference;
 		}
+		
+		return false;
 	}
 	
 	/**
-	 * Check if call method is a table field
+	 * Retrun field with table name or table alias
+	 * 
+	 * @param string $field
+	 */
+	private function _addAliasToField($field)
+	{
+		return $this->_getTable(true).'.'.$field;
+	}
+	
+	/**
+	 * Check if call method is a table field and return self if exists, else returns false
 	 * 
 	 * @param string $method
 	 * @param array $arguments
+	 * @return Object or Boolean
 	 */
 	protected function _callField($method,$arguments)
 	{
@@ -569,10 +655,7 @@ class JORMDatabaseQuery
 		
 		//check if exists on fields list
 		if( array_search($method, $this->_fields) !== false ){
-			$table = $this->_tbl;
-			if( !empty($this->_tbl_alias) ) $table = $this->_tbl_alias;
-			
-			$string = $table.'.'.$method;
+			$string = $this->_addAliasToField($method);
 			
 			//check if is one argument set the condition equal argument
 			if( $count_arguments == 1 ){
@@ -598,5 +681,7 @@ class JORMDatabaseQuery
 			
 			return $this;
 		}
+		
+		return false;
 	}
 }
