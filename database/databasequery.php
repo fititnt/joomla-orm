@@ -191,6 +191,9 @@ class JORMDatabaseQuery
 	 */
 	public function addReference($alias,$config)
 	{
+		//clean alias name
+		$alias	= preg_replace('/[^A-Z0-9_]/i', '', $alias);
+		
 		//check array
 		if( is_array($config) )
 			$config = $this->_options($config);
@@ -200,6 +203,8 @@ class JORMDatabaseQuery
 		}
 		
 		$this->_references[$alias] = $config;
+		
+		return $this;
 	} 
 	
 	/**
@@ -293,6 +298,7 @@ class JORMDatabaseQuery
 		$conditions = $this->_getTable()
 					.$foreign['conditions'];
 		
+		//create join type
 		switch($join_type)
 		{
 			case 'left':
@@ -306,6 +312,7 @@ class JORMDatabaseQuery
 				break;
 		}
 		
+		//add columns to select
 		if( !empty($columns) )
 			$this->_query->select($columns);
 	}
@@ -342,22 +349,6 @@ class JORMDatabaseQuery
 		{
 			$this->_instanceJTable($this->_jtable);
 		}
-	}
-	
-/**
-	 * Method to load and return a model object.
-	 *
-	 * @param   string  $name    The name of the view
-	 * @param   string  $prefix  The class prefix. Optional.
-	 * @param   array   $config  Configuration settings to pass to JTable::getInsance
-	 *
-	 * @return  mixed  Model object or boolean false if failed
-	 * @since   11.1
-	 * @see     JTable::getInstance
-	 */
-	protected function _createTable($name, $prefix = 'Table', $config = array())
-	{
-		
 	}
 	
 	/**
