@@ -36,6 +36,12 @@ class JORMDatabaseQueryHelperModuleRenderer extends JORMDatabaseQueryHelperAbstr
 		{
 			foreach($modules as $module)
 			{
+				/**
+				 * Set a user property to 0
+				 * 
+				 * @see JModulesHelper
+				 */
+				$module->user = 0;
 				$html .= JModuleHelper::renderModule($module);
 			}
 		}

@@ -170,7 +170,7 @@ class JORMDatabaseQuery
 		$instance->_fields = isset($options['fields']) ? $options['fields'] : array() ;
 		$instance->_tbl = $options['tbl'];
 		$instance->_tbl_alias = isset($options['tbl_alias']) ? $options['tbl_alias'] : null ;
-		$instance->_jtable = is_array($options['jtable']) ? $options['jtable'] : array() ;
+		$instance->_jtable = ( isset($options['jtable']) && is_array($options['jtable']) ) ? $options['jtable'] : array() ;
 		//check jable prefix
 		if( !empty($instance->_jtable) && !isset($instance->_jtable['prefix']) ){
 			$instance->_jtable['prefix'] = 'JTable';
@@ -407,8 +407,8 @@ class JORMDatabaseQuery
 		
 		//check if exists on fields list
 		if( array_search($method, $this->_fields) !== false ){
-			$table = $this->_table;
-			if( !empty($this->_table_alias) ) $table = $this->_table_alias;
+			$table = $this->_tbl;
+			if( !empty($this->_tbl_alias) ) $table = $this->_tbl_alias;
 			
 			$string = $table.'.'.$method;
 			
