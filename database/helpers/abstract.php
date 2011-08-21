@@ -19,7 +19,7 @@ defined('JPATH_PLATFORM') or die;
  * @tutorial	Joomla.Platform/jormdatabasequeryhelperabstract.cls
  * @link		http://docs.joomla.org/JORMDatabaseQueryHelperAbstract
  */
-class JORMDatabaseQueryHelperAbstract
+abstract class JORMDatabaseQueryHelperAbstract
 {
 	/**
 	 * JORMDatabaseQuery object
@@ -38,5 +38,16 @@ class JORMDatabaseQueryHelperAbstract
 	public function __construct(JORMDatabaseQuery $reference)
 	{
 		$this->_reference = $reference;
+		$this->_initialize();
+	}
+	
+	/**
+	 * Initialize void method
+	 * 
+	 * @since 11.1
+	 */
+	protected function _initialize()
+	{
+		
 	}
 }

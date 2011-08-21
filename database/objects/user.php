@@ -65,9 +65,22 @@ class User extends JORMDatabaseQuery
 		'prefix' => 'jtable'
 	);
 	protected $_foreign_tables = array(
-		'#__content' => array(
+		'content' => array(
 			'jointype' => 'left',
-			'condition' => 'a.created_by = u.id'
+			'joincolumn' => array(
+				array(
+					//referenced table field
+					'name' => 'created_by',
+					//reference category to table column
+					'referencedColumnName' => 'id'
+				),
+				array(
+					//referenced table field
+					'name' => 'modified_by',
+					//reference category to table column
+					'referencedColumnName' => 'id'
+				)
+			)
 		)
 	);
 	

@@ -353,8 +353,9 @@ class JORMDatabaseQuery
 		
 		$foreign = $this->_foreign_tbls[$reference->_tbl];
 		
-		$join_type 	= $foreign['jointype'];
+		$join_type 		= $foreign['jointype'];
 		$join_columns 	= $foreign['joincolumn'];
+		$columns 		= $foreign['column'];
 		$conditions = $this->_getTable();
 		
 		$arrJoinColumns = array();

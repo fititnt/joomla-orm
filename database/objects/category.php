@@ -76,24 +76,38 @@ class Category extends JORMDatabaseQuery
 	 * @since  11.1
 	 */
 	protected $_foreign_tables = array(
-		'#__content' => array(
+		//relation table (whitout prefix)
+		'content' => array(
+			//join method
 			'jointype' => 'LEFT',
-			'conditions' => 'cat.id = a.catid',
+			'joincolumn' => array(
+				//referenced table field
+				'name' => 'catid',
+				//reference category to table column
+				'referencedColumnName' => 'id'
+			),
 			'columns' => array(
-				'cat.title AS category_title',
-				'c.path AS category_route',
-				'c.access AS category_access',
-				'c.alias AS category_alias'
+				'title AS category_title',
+				'path AS category_route',
+				'access AS category_access',
+				'alias AS category_alias'
 			)
 		),
-		'#__banners' => array(
+		//relation table (whitout prefix)
+		'banners' => array(
+			//join method
 			'jointype' => 'LEFT',
-			'conditions' => 'cat.id = b.catid',
+			'joincolumn' => array(
+				//referenced table field
+				'name' => 'catid',
+				//reference category to table column
+				'referencedColumnName' => 'id'
+			),
 			'columns' => array(
-				'cat.title AS category_title',
-				'c.path AS category_route',
-				'c.access AS category_access',
-				'c.alias AS category_alias'
+				'title AS category_title',
+				'path AS category_route',
+				'access AS category_access',
+				'alias AS category_alias'
 			)
 		)
 	);
