@@ -8,6 +8,7 @@
 $basePath = dirname(__FILE__);
 
 JLoader::import('inflector.inflector',$basePath);
+JLoader::import('class.options',$basePath);
 JLoader::import('database.helpers.abstract',$basePath);
 JLoader::import('database.databasequeryexception',$basePath);
 JLoader::import('database.databasequeryhelper',$basePath);
