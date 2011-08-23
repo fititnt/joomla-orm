@@ -22,9 +22,9 @@ defined('JPATH_PLATFORM') or die;
 class JORMDatabaseQuery
 {
 	/**
-	 * Array that will be converted to JClassOptions object.
+	 * Array that will be converted to JORMClassOptions object.
 	 *
-	 * @var    JClassOptions object
+	 * @var    JORMClassOptions object
 	 * @since  11.1
 	 */
 	protected $_options = array(
@@ -85,7 +85,7 @@ class JORMDatabaseQuery
 		$this->_db 		 = JFactory::getDbo();
 		
 		$this->_options['jtable']['db'] = $this->_db;
-		$this->_options	= new JClassOptions($this->_options);
+		$this->_options	= new JORMClassOptions($this->_options);
 		
 		//checking object
 		if( is_object($reference) )
@@ -195,7 +195,7 @@ class JORMDatabaseQuery
 			JORMDatabaseQueryException::checkObjectSubclass($config);
 		}
 		
-		$this->_options->set('references',array($alias => $config));
+		$this->_options->references[$alias] = $config;
 		
 		return $this;
 	} 
@@ -260,7 +260,7 @@ class JORMDatabaseQuery
 		
 		$join_type 		= $foreign['jointype'];
 		$join_columns 	= $foreign['joincolumn'];
-		$columns 		= $foreign['column'];
+		$columns 		= !empty($foreign['column']) ? $foreign['column'] : array() ;
 		$conditions = $this->_getTable();
 		
 		$arrJoinColumns = array();
@@ -506,6 +506,7 @@ class JORMDatabaseQuery
 	{
 		//check if method is a reference
 		$references = $this->_options->references;
+		
 		if( array_key_exists($method, $references) ){
 			$reference_data = $references[$method];
 			
