@@ -21,66 +21,46 @@ defined('JPATH_PLATFORM') or die;
 class User extends JORMDatabaseQuery
 {
 	/**
-	 * List of fields to select.
-	 *
-	 * @var    Array
-	 * @since  11.1
+	 * User config settings
+	 * 
+	 * @var array
+	 * @since 11.1
 	 */
-	protected $_fields = array(
-		'id',
-		'name',
-		'email',
-		'username',
-		'gid',
-		'registerDate',
-		'lastvisitDate',
-		'activation',
-		'params'
-	);
-	
-	/**
-	 * Name of the database table.
-	 *
-	 * @var    string
-	 * @since  11.1
-	 */
-	protected $_tbl = '#__users';
-	
-	/**
-	 * Alias to table.
-	 *
-	 * @var    string
-	 * @since  11.1
-	 */
-	protected $_tbl_alias = 'u';
-	
-	/**
-	 * The JTable Class.
-	 *
-	 * @var	JTable	A JTable object.
-	 * @since  11.1
-	 */
-	protected $_jtable = array(
-		'type' => 'user',
-		'prefix' => 'jtable'
-	);
-	protected $_foreign_tables = array(
-		'content' => array(
-			'jointype' => 'left',
-			'joincolumn' => array(
-				array(
-					//referenced table field
-					'name' => 'created_by',
-					//reference category to table column
-					'referencedColumnName' => 'id'
-				),
-				array(
-					//referenced table field
-					'name' => 'modified_by',
-					//reference category to table column
-					'referencedColumnName' => 'id'
+	protected $_config_options = array(
+		'fields' => array(
+			'id',
+			'name',
+			'email',
+			'username',
+			'gid',
+			'registerDate',
+			'lastvisitDate',
+			'activation',
+			'params'
+		),
+		'tbl' => 'users',
+		'tbl_alias' => 'u',
+		'jtable' => array(
+			'type' => 'user'
+		),
+		'foreign_tbls' => array(
+			'content' => array(
+					'jointype' => 'left',
+					'joincolumn' => array(
+						array(
+							//referenced table field
+							'name' => 'created_by',
+							//reference category to table column
+							'referencedColumnName' => 'id'
+						),
+						array(
+							//referenced table field
+							'name' => 'modified_by',
+							//reference category to table column
+							'referencedColumnName' => 'id'
+						)
+					)
 				)
-			)
 		)
 	);
 	

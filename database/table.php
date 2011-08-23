@@ -22,4 +22,23 @@ jimport('joomla.database.table');
  * @tutorial	Joomla.Platform/jormdatabasetable.cls
  * @link		http://docs.joomla.org/JORMDatabaseTable
  */
-class JORMDatabaseTable extends JTable{}
+class JORMDatabaseTable extends JTable
+{
+	/**
+	 * Call to special method when exists.
+	 * This methods will recive value to has be changed or modified.
+	 * 
+	 * @since 11.1
+	 */
+	public function set($property,$value)
+	{
+		$method_name = 'set'.$property;
+		if( method_exists($this,$method_name) )
+		{
+			call_user_method($method_name, $this,$value);
+		}
+		else{
+			parent::set($property,$value);
+		}
+	}
+}

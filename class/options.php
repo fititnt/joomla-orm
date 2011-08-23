@@ -44,8 +44,8 @@ class JORMClassOptions extends JObject
 	 */
 	public function santizeOptions($options,$compareOptions = null)
 	{
-		if( empty($this->_default) || !is_array($compareOptions) ) return $options;
-		if( is_null($compareOptions) ) $compareOptions = $this->_default;;
+		if( empty($this->_default) ) return $options;
+		if( is_null($compareOptions) ) $compareOptions = $this->_default;
 		
 		return array_merge_recursive($options,$compareOptions);
 	}

@@ -22,18 +22,18 @@ defined('JPATH_PLATFORM') or die;
 class JORMDatabaseQuery
 {
 	/**
-	 * Array that will be converted to JORMClassOptions object.
+	 * Array that will default options to JORMClassOptions object.
 	 *
-	 * @var    JORMClassOptions object
+	 * @var    array
 	 * @since  11.1
 	 */
-	protected $_options = array(
+	protected $_default_options = array(
 			//name
 			'name' => '',
 			//select fields
 			'fields' => array(),
 			//table prefix
-			'tbl_prefix' => '',
+			'tbl_prefix' => '#__',
 			//table alias
 			'tbl_alias' => null,
 			//reference to anothers
@@ -42,7 +42,6 @@ class JORMDatabaseQuery
 			'foreign_tbls' => array(),
 			//jtable config
 			'jtable' => array(
-				'type' => null,
 				'prefix' => 'JTable',
 				'tbl' => '',
 				'tbl_key' => '',
@@ -51,9 +50,24 @@ class JORMDatabaseQuery
 	);
 	
 	/**
+	 * JORMClassOptions object
+	 * 
+	 * @var	JORMClassOptions object
+	 * @since 11.1
+	 */
+	protected $_options;
+	
+	/**
+	 * Config options to bind JORMClassOptions object
+	 * 
+	 * @var array
+	 */
+	protected $_config_options = array();
+	
+	/**
 	 * JDatabase connector object.
 	 *
-	 * @var    JDatabase object
+	 * @var	JDatabase object
 	 * @since  11.1
 	 */
 	protected $_db;
@@ -84,8 +98,9 @@ class JORMDatabaseQuery
 		// Set internal variables.
 		$this->_db 		 = JFactory::getDbo();
 		
-		$this->_options['jtable']['db'] = $this->_db;
-		$this->_options	= new JORMClassOptions($this->_options);
+		$this->_default_options['jtable']['db'] = $this->_db;
+		$this->_options	= new JORMClassOptions($this->_default_options);
+		$this->_options->setOptions($this->_config_options);
 		
 		//checking object
 		if( is_object($reference) )
@@ -337,6 +352,9 @@ class JORMDatabaseQuery
 	 */
 	public function _instanceJTable(array $config)
 	{
+		//add tables path
+		JTable::addIncludePath(dirname(__FILE__).DS.'table');
+		
 		if(!empty($config['tbl_key']) && !empty($config['tbl']) && ($config['db'] instanceof JDatabase))
 		{
 			$jtable = new JORMDatabaseTable($config['tbl'], $config['tbl_key'], $config['db']);
@@ -442,10 +460,13 @@ class JORMDatabaseQuery
 	/**
 	 * This function will check method and callback using these order
 	 * 
-	 * 1 - Field check
-	 * 2 - JTable 
-	 * 2 - JDatabaseQuery
-	 * 3 - JDatabase
+	 * Call order
+	 * 
+	 * 1 - Reference
+	 * 2 - Field
+	 * 3 - JTable 
+	 * 4 - JDatabaseQuery
+	 * 5 - JDatabase
 	 * 
 	 * @since 11.1
 	 */
@@ -502,7 +523,7 @@ class JORMDatabaseQuery
 	 * @return JORMDatabaseQuery object or FALSE
 	 * @since 11.1
 	 */
-	final function _callReference($method)
+	final private function _callReference($method)
 	{
 		//check if method is a reference
 		$references = $this->_options->references;
