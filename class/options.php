@@ -21,7 +21,7 @@ jimport('joomla.base.object');
  * @tutorial	Joomla.Platform/jclassoption.cls
  * @link		http://docs.joomla.org/JClassOption
  */
-class JClassOptions extends JObject
+class JORMClassOptions extends JObject
 {
 	private $_default = array();
 	
@@ -29,6 +29,7 @@ class JClassOptions extends JObject
 	 * Create recived options array properties and set by default settings
 	 * 
 	 * @param array $options
+	 * @since 11.1
 	 */
 	public function __construct(array $options = array())
 	{
@@ -36,35 +37,32 @@ class JClassOptions extends JObject
 		$this->_default = $options;
 	}
 	
+	/**
+	 * Merge options with default array
+	 * 
+	 * @since 11.1
+	 */
 	public function santizeOptions($options,$compareOptions = null)
 	{
 		if( empty($this->_default) || !is_array($compareOptions) ) return $options;
 		if( is_null($compareOptions) ) $compareOptions = $this->_default;;
 		
-		foreach($compareOptions as $default_key => $default_value)
-		{
-			if( !property_exists($this, $default_key) )
-			{
-				$this->$default_key = $default_value;
-			}
-			
-			if( is_array($options[$default_key]) && !empty($options[$default_key]) ){
-				$options[$default_key] = $this->santizeOptions($options[$default_key],$this->_default[$default_key]);
-			}
-		}
-		
-		return $options;
+		return array_merge_recursive($options,$compareOptions);
 	}
 	
 	/**
 	 * Set options array
 	 * 
 	 * @return self instance
+	 * @since 11.1
 	 */
-	public function setOptions()
+	public function setOptions($options)
 	{
-		$options = $this->santizeOptions(func_get_args());
-		call_user_method_array('set', $this, $options);
+		$options = $this->santizeOptions($options);
+		
+		foreach($options as $option_key => $option_value){
+			$this->set($option_key,$option_value);
+		}
 		
 		return $this;
 	}
