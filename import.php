@@ -14,7 +14,6 @@ JLoader::import('database.databasequeryexception',$basePath);
 JLoader::import('database.databasequeryhelper',$basePath);
 JLoader::import('database.table',$basePath);
 JLoader::import('database.databasequery',$basePath);
-JLoader::import('yaml.includes.spyc',$basePath);
 JLoader::import('yaml.yaml',$basePath);
 
 //load language
