@@ -138,7 +138,7 @@ class JORMDatabaseQuery
 		
 		// Only try to load the class if it doesn't already exist.
 		if (!class_exists($queryObjectClass)) {
-			// Search for the class file in the JTable include paths.
+			// Search for the class file in the JORMDatabaseQuery include paths.
 			jimport('joomla.filesystem.path');
 
 			if ($path = JPath::find(self::addIncludePath(), strtolower($queryObject).'.php')) {
@@ -224,11 +224,11 @@ class JORMDatabaseQuery
 	{
 		if( empty($this->_options->fields) && empty($this->_options->tbl) ) return;
 		
-		$tmp_options->fields = $this->_options->fields;
-		foreach($tmp_options->fields as &$field)
+		$tmp_options = $this->_options->fields;
+		foreach($tmp_options as &$field)
 			$field = $this->_addAliasToField($field);
 		
-		$this->_query->select($tmp_options->fields)->from($this->_getTable());
+		$this->_query->select($tmp_options)->from($this->_getTable());
 	}
 	
 	/**
@@ -402,14 +402,14 @@ class JORMDatabaseQuery
 	}
 	
 	/**
-	 * Add a filesystem path where JTable should search for table class files.
+	 * Add a filesystem path where JORMDatabaseQuery should search for table class files.
 	 * You may either pass a string or an array of paths.
 	 *
 	 * @param   mixed  A filesystem path or array of filesystem paths to add.
 	 *
-	 * @return  array  An array of filesystem paths to find JTable classes in.
+	 * @return  array  An array of filesystem paths to find JORMDatabaseQuery classes in.
 	 *
-	 * @link    http://docs.joomla.org/JTable/addIncludePath
+	 * @link    http://docs.joomla.org/JORMDatabaseQuery/addIncludePath
 	 * @since   11.1
 	 */
 	public static function addIncludePath($path = null)

@@ -13,8 +13,10 @@
 	<files>
 		<filename>README.txt</filename>
 		<filename>import.php</filename>
+		<folder>class</folder>
 		<folder>database</folder>
 		<folder>inflector</folder>
+		<folder>yaml</folder>
 	</files>
 	<languages>
 		<language tag="en-GB">en-GB.lib_jorm.ini</language>

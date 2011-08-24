@@ -47,7 +47,19 @@ class JORMClassOptions extends JObject
 		if( empty($this->_default) ) return $options;
 		if( is_null($compareOptions) ) $compareOptions = $this->_default;
 		
-		return array_merge_recursive($options,$compareOptions);
+		foreach($compareOptions as $default_key => $default_value)
+		{
+			if( array_key_exists($default_key, $options) === false )
+			{
+				$options[$default_key] = $default_value;
+			}
+			
+			if( is_array($compareOptions[$default_key]) && !empty($options[$default_key]) ){
+				$options[$default_key] = $this->santizeOptions($options[$default_key],$this->_default[$default_key]);
+			}
+		}
+		
+		return $options;
 	}
 	
 	/**
