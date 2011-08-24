@@ -21,21 +21,15 @@ defined('JPATH_PLATFORM') or die;
 class Menu extends JORMDatabaseQuery
 {
 	/**
-	 * Name of the database table.
-	 *
-	 * @var    string
-	 * @since  11.1
+	 * Menu config settings
+	 * 
+	 * @var array
+	 * @since 11.1
 	 */
-	protected $_tbl = '#__menu';
-	
-	/**
-	 * The JTable Class.
-	 *
-	 * @var	JTable	A JTable object.
-	 * @since  11.1
-	 */
-	protected $_jtable = array(
-		'type' => 'menu',
-		'prefix' => 'jtable'
+	protected $_config_options = array(
+		'tbl' => 'menu',
+		'jtable' => array(
+			'type' => 'menu'
+		)
 	);
 }

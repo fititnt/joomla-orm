@@ -21,30 +21,17 @@ defined('JPATH_PLATFORM') or die;
 class Module extends JORMDatabaseQuery
 {
 	/**
-	 * Name of the database table.
-	 *
-	 * @var    string
-	 * @since  11.1
+	 * Module config settings
+	 * 
+	 * @var array
+	 * @since 11.1
 	 */
-	protected $_tbl = '#__modules';
-	
-	/**
-	 * Alias to table.
-	 *
-	 * @var    string
-	 * @since  11.1
-	 */
-	protected $_tbl_alias = 'm';
-	
-	/**
-	 * The JTable Class.
-	 *
-	 * @var	JTable	A JTable object.
-	 * @since  11.1
-	 */
-	protected $_jtable = array(
-		'type' => 'Module',
-		'prefix' => 'jtable'
+	protected $_config_options = array(
+		'tbl' => 'modules',
+		'tbl_alias' => 'm',
+		'jtable' => array(
+			'type' => 'Module'
+		)
 	);
 	
 	/**

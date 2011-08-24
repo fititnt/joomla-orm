@@ -21,41 +21,21 @@ defined('JPATH_PLATFORM') or die;
 class UserGroup extends JORMDatabaseQuery
 {
 	/**
-	 * List of fields to select.
-	 *
-	 * @var    Array
-	 * @since  11.1
+	 * Usergroup config settings
+	 * 
+	 * @var array
+	 * @since 11.1
 	 */
-	protected $_fields = array(
-		'id',
-		'parent_id',
-		'title'
-	);
-	
-	/**
-	 * Name of the database table.
-	 *
-	 * @var    string
-	 * @since  11.1
-	 */
-	protected $_tbl = '#__usergroups';
-	
-	/**
-	 * Alias to table.
-	 *
-	 * @var    string
-	 * @since  11.1
-	 */
-	protected $_tbl_alias = 'grp';
-	
-	/**
-	 * The JTable Class.
-	 *
-	 * @var	JTable	A JTable object.
-	 * @since  11.1
-	 */
-	protected $_jtable = array(
-		'type' => 'usergroup',
-		'prefix' => 'jtable'
+	protected $_config_options = array(
+		'fields' => array(
+			'id',
+			'parent_id',
+			'title'
+		),
+		'tbl' => 'usergroups',
+		'tbl_alias' => 'grp',
+		'jtable' => array(
+			'type' => 'usergroup'
+		)
 	);
 }

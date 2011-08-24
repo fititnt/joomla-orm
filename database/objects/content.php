@@ -21,56 +21,38 @@ defined('JPATH_PLATFORM') or die;
 class Content extends JORMDatabaseQuery
 {
 	/**
-	 * List of fields to select.
-	 *
-	 * @var    Array
-	 * @since  11.1
+	 * Content config settings
+	 * 
+	 * @var array
+	 * @since 11.1
 	 */
-	protected $_fields = array(
-		'id',
-		'title',
-		'alias',
-		'title_alias',
-		'introtext',
-		'fulltext',
-		'created',
-		'catid',
-		'created_by',
-		'creted_by_alias',
-		'modified',
-		'metakey',
-		'metadesc',
-		'version',
-		'hits',
-		'metadata',
-		'featured',
-		'ordering',
-		'attribs'
-	);
-	/**
-	 * Name of the database table.
-	 *
-	 * @var    string
-	 * @since  11.1
-	 */
-	protected $_tbl = '#__content';
-	
-	/**
-	 * Alias to table.
-	 *
-	 * @var    string
-	 * @since  11.1
-	 */
-	protected $_tbl_alias = 'a';
-	
-	/**
-	 * The JTable Class.
-	 *
-	 * @var	JTable	A JTable object.
-	 * @since  11.1
-	 */
-	protected $_jtable = array(
-		'type' => 'content',
-		'prefix' => 'jtable'
+	protected $_config_options = array(
+		'fields' => array(
+			'id',
+			'title',
+			'alias',
+			'title_alias',
+			'introtext',
+			'fulltext',
+			'created',
+			'catid',
+			'created_by',
+			'creted_by_alias',
+			'modified',
+			'metakey',
+			'metadesc',
+			'version',
+			'hits',
+			'metadata',
+			'featured',
+			'ordering',
+			'attribs'
+		),
+		'tbl' => 'content',
+		'tbl_alias' => 'a',
+		'jtable' => array(
+			'type' => 'content',
+			'prefix' => 'jtable'
+		)
 	);
 }
